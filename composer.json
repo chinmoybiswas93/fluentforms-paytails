@@ -1,0 +1,11 @@
+{
+  "name": "your-vendor/fluentforms-paytails",
+  "description": "Boilerplate for fluentforms-paytails",
+  "type": "wordpress-plugin",
+  "autoload": {
+    "psr-4": {
+      "FluentformsPaytails\\": "app/"
+    }
+  },
+  "require": {}
+}
