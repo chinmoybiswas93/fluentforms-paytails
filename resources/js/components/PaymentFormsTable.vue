@@ -146,7 +146,7 @@ onMounted(() => fetchForms());
   font-size: 1rem;
   margin: 1rem 0;
   padding: .7rem;
-  text-shadow: 1px 1px 1px #ffffffcc;
+  text-shadow: none;
   color: #ffffff;
   background: #187efc;
   border-radius: 5px;
@@ -313,10 +313,10 @@ onMounted(() => fetchForms());
 
 .summary-card {
   flex: 1;
-  background: #fff;
+  background: #f7f7f7;
   border-radius: 4px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgb(24 126 252);
+  box-shadow: 0 2px 3px 0 hsla(0,0%,51%,.1);
   cursor: pointer;
 }
 .summary-card:hover {
