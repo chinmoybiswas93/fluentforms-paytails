@@ -1,16 +1,9 @@
 <template>
-  <div class="ff-table-wrapper">
-    <div class="ff-table-header">
-      <h2>Overview of Total Received Payments </h2>
-      <button @click="refreshForms" class="refresh-button">
-        <span v-if="!loading">Refresh</span>
-        <span v-else class="loading-spinner"></span>
-      </button>
-    </div>
-
+  <div>
+    <!-- Summary Cards - Outside table wrapper -->
     <div v-if="loading" class="spinner-paytails" style="margin-bottom: 2rem; padding: 0.5rem 1rem">
-        <span class="spinner is-active"></span>
-        <p>  Loading stats, please wait... </p>
+      <span class="spinner is-active"></span>
+      <p> Loading stats, please wait... </p>
     </div>
     <div class="ff-summary-cards" v-else>
       <div class="summary-card">
@@ -27,61 +20,109 @@
       </div>
     </div>
 
-    <hr>
-
-    <div class="responsive-table">
-
+    <!-- Table wrapper -->
+    <div class="ff-table-wrapper">
       <div class="ff-table-header">
-        <h2> Payment Receiver Form Analytics </h2>
+        <button @click="refreshForms" class="refresh-button">
+          <span v-if="!loading">Refresh</span>
+          <span v-else class="loading-spinner"></span>
+        </button>
       </div>
 
-      <table>
-        <thead>
-        <tr>
-          <th v-for="column in columns" :key="column.key">{{ column.label }}</th>
-        </tr>
-        <tr v-if="loading" class="spinner-paytails">
-          <td :colspan="columns.length" class="loading-state">
-            <span class="spinner is-active"></span>
-            <p>Loading forms data, please wait...</p>
-          </td>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="form in forms" :key="form.id">
-          <td data-label="ID">{{ form.id }}</td>
-          <td data-label="Title">
-            <a :href="form.edit_url" class="form-title">{{ form.title }}</a>
-          </td>
-          <td data-label="Status">
-              <span class="status-badge" :class="form.status.toLowerCase()">
-                {{ form.status }}
-              </span>
-          </td>
-          <td data-label="Creator">{{ form.creator }}</td>
-          <td data-label="Total Paid">${{ form.total_paid }}</td>
-          <td data-label="Actions">
-            <a :href="form.edit_url" class="table-button">Edit</a>
-            <a :href="form.entries_url" class="table-button secondary">Entries</a>
-          </td>
-        </tr>
-        <tr v-if="!forms.length && !loading">
-          <td :colspan="columns.length" class="no-data">No payment forms found</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
+      <div class="responsive-table">
+        <div class="ff-table-header">
+          <h2> Payment Receiver Form Analytics </h2>
+          <!-- Pagination Controls Top -->
+          <div class="pagination-controls" v-if="!loading && forms.length > 0">
+            <select v-model="itemsPerPage" @change="goToPage(1)" class="items-per-page">
+              <option value="5">5 per page</option>
+              <option value="10">10 per page</option>
+              <option value="25">25 per page</option>
+              <option value="50">50 per page</option>
+            </select>
+          </div>
+        </div>
 
-    <div v-if="error" class="error-notice">{{ error }}</div>
+        <table>
+          <thead>
+            <tr>
+              <th v-for="column in columns" :key="column.key">{{ column.label }}</th>
+            </tr>
+            <tr v-if="loading" class="spinner-paytails">
+              <td :colspan="columns.length" class="loading-state">
+                <span class="spinner is-active"></span>
+                <p>Loading forms data, please wait...</p>
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="form in paginatedForms" :key="form.id">
+              <td data-label="ID">{{ form.id }}</td>
+              <td data-label="Title">
+                <a :href="form.edit_url" class="form-title">{{ form.title }}</a>
+              </td>
+              <td data-label="Status">
+                <span class="status-badge" :class="form.status.toLowerCase()">
+                  {{ form.status }}
+                </span>
+              </td>
+              <td data-label="Creator">{{ form.creator }}</td>
+              <td data-label="Total Paid">${{ form.total_paid }}</td>
+              <td data-label="Actions">
+                <a :href="form.edit_url" class="table-button">Edit</a>
+                <a :href="form.entries_url" class="table-button secondary">Entries</a>
+              </td>
+            </tr>
+            <tr v-if="!forms.length && !loading">
+              <td :colspan="columns.length" class="no-data">No payment forms found</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination Controls Bottom -->
+        <div class="pagination-wrapper" v-if="!loading && forms.length > 0">
+          <div class="pagination-info">
+            Showing {{ startItem }} to {{ endItem }} of {{ forms.length }} entries
+          </div>
+          <div class="pagination">
+            <button @click="goToPage(1)" :disabled="currentPage === 1" class="pagination-btn">
+              First
+            </button>
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" class="pagination-btn">
+              Previous
+            </button>
+
+            <span v-for="page in visiblePages" :key="page">
+              <button v-if="page !== '...'" @click="goToPage(page)"
+                :class="['pagination-btn', { active: currentPage === page }]">
+                {{ page }}
+              </button>
+              <span v-else class="pagination-dots">...</span>
+            </span>
+
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages" class="pagination-btn">
+              Next
+            </button>
+            <button @click="goToPage(totalPages)" :disabled="currentPage === totalPages" class="pagination-btn">
+              Last
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="error" class="error-notice">{{ error }}</div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 
 const loading = ref(false);
 const error = ref(null);
 const forms = ref([]);
+const currentPage = ref(1);
+const itemsPerPage = ref(10);
 const totals = ref({
   total_forms: 0,
   total_payments: 0,
@@ -96,6 +137,57 @@ const columns = ref([
   { key: 'total_paid', label: 'Total Payment Received (USD)' },
   { key: 'actions', label: 'Actions' }
 ]);
+
+// Computed properties for pagination
+const totalPages = computed(() => {
+  return Math.ceil(forms.value.length / itemsPerPage.value);
+});
+
+const paginatedForms = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return forms.value.slice(start, end);
+});
+
+const startItem = computed(() => {
+  return forms.value.length === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1;
+});
+
+const endItem = computed(() => {
+  const end = currentPage.value * itemsPerPage.value;
+  return end > forms.value.length ? forms.value.length : end;
+});
+
+const visiblePages = computed(() => {
+  const total = totalPages.value;
+  const current = currentPage.value;
+  const pages = [];
+
+  if (total <= 7) {
+    // Show all pages if total is 7 or less
+    for (let i = 1; i <= total; i++) {
+      pages.push(i);
+    }
+  } else {
+    // Show pages with ellipsis
+    if (current <= 3) {
+      pages.push(1, 2, 3, 4, '...', total);
+    } else if (current >= total - 2) {
+      pages.push(1, '...', total - 3, total - 2, total - 1, total);
+    } else {
+      pages.push(1, '...', current - 1, current, current + 1, '...', total);
+    }
+  }
+
+  return pages;
+});
+
+// Pagination methods
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
+};
 
 const fetchForms = async () => {
   loading.value = true;
@@ -113,6 +205,9 @@ const fetchForms = async () => {
       total_payments: 0,
       total_amount: '0.00'
     };
+
+    // Reset to first page when refreshing
+    currentPage.value = 1;
   } catch (e) {
     error.value = 'Failed to load forms. Please try again.';
   } finally {
@@ -143,13 +238,8 @@ onMounted(() => fetchForms());
 }
 
 .ff-table-header h2 {
-  font-size: 1rem;
-  margin: 1rem 0;
-  padding: .7rem;
-  text-shadow: none;
-  color: #ffffff;
-  background: #187efc;
-  border-radius: 5px;
+  font-size: 1.2rem;
+  margin: 0;
 }
 
 .refresh-button {
@@ -161,10 +251,15 @@ onMounted(() => fetchForms());
   border-radius: 5px;
   cursor: pointer;
   transition: background 0.2s ease-in-out;
+  position: absolute;
+  top: 1.5rem;
+  right: 3.5rem;
 }
+
 .refresh-button:hover {
-  background:#1a7efb;
+  background: #1a7efb;
 }
+
 .loading-spinner {
   width: 18px;
   height: 18px;
@@ -185,6 +280,7 @@ onMounted(() => fetchForms());
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+
   tr:hover {
     background: #1a7efb08;
     cursor: pointer;
@@ -208,6 +304,7 @@ onMounted(() => fetchForms());
   text-decoration: none;
   font-weight: 500;
 }
+
 .form-title:hover {
   text-decoration: underline;
 }
@@ -219,15 +316,18 @@ onMounted(() => fetchForms());
   font-weight: 600;
   text-transform: capitalize;
 }
+
 .status-badge.published {
   background-color: #1a7efb0f;
   color: #1a7efb;
 }
+
 .status-badge.unpublished {
   background-color: #d636381a;
   color: red;
   font-weight: 600;
 }
+
 .status-badge.draft {
   background-color: #fff3cd;
   color: #856404;
@@ -243,9 +343,11 @@ onMounted(() => fetchForms());
   background-color: #1a7efb;
   margin-right: 5px;
 }
+
 .table-button.secondary {
   background-color: #6c757d;
 }
+
 .table-button:hover {
   opacity: 0.85;
 }
@@ -266,8 +368,79 @@ onMounted(() => fetchForms());
   border: 1px solid #f5c6cb;
 }
 
+/* Pagination Styles */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.items-per-page {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  line-height: 1;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 15px 0;
+  border-top: 1px solid #eaeaea;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #666;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pagination-btn {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #1a7efb;
+}
+
+.pagination-btn.active {
+  background: #1a7efb;
+  color: white;
+  border-color: #1a7efb;
+}
+
+.pagination-btn:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+
+.pagination-dots {
+  padding: 8px 4px;
+  color: #666;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
+
   .responsive-table table,
   .responsive-table thead,
   .responsive-table tbody,
@@ -285,7 +458,7 @@ onMounted(() => fetchForms());
     margin-bottom: 15px;
     background: #fff;
     border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     overflow: hidden;
   }
 
@@ -303,6 +476,27 @@ onMounted(() => fetchForms());
     flex: 0 0 120px;
     margin-right: 10px;
   }
+
+  .pagination-wrapper {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ff-table-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .pagination-controls {
+    justify-content: center;
+  }
 }
 
 .ff-summary-cards {
@@ -313,18 +507,18 @@ onMounted(() => fetchForms());
 
 .summary-card {
   flex: 1;
-  background: #f7f7f7;
+  background: #ffffff;
   border-radius: 4px;
   padding: 20px;
-  box-shadow: 0 2px 3px 0 hsla(0,0%,51%,.1);
-  cursor: pointer;
+  box-shadow: 0 2px 3px 0 hsla(0, 0%, 51%, .1);
+  /* cursor: pointer; */
 }
-.summary-card:hover {
-  border-radius: 0;
+
+/* .summary-card:hover {
   padding: 20px;
   box-shadow: 0 1px 3px rgb(255 0 195);
   transition: all 0.5s ease;
-}
+} */
 
 .summary-title {
   font-size: 14px;
@@ -337,10 +531,12 @@ onMounted(() => fetchForms());
   font-weight: bold;
   color: #333;
 }
+
 .spinner-paytails {
   background: #f7ff1217;
   border: 2px solid #cbc41f40;
 }
+
 .spinner-paytails p {
   color: #cbc51f;
   font-size: 18px;
@@ -348,4 +544,3 @@ onMounted(() => fetchForms());
   margin: 0.4rem 0;
 }
 </style>
-
