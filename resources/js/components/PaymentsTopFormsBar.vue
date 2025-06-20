@@ -24,10 +24,21 @@ onMounted(() => {
       type: 'bar',
       data: props.chartData,
       options: {
-        indexAxis: 'y', // horizontal bar
+        indexAxis: 'y',
         responsive: true,
         plugins: {
           legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => {
+                // Use full label from chartData.fullLabels
+                const idx = items[0].dataIndex;
+                return props.chartData.fullLabels
+                  ? props.chartData.fullLabels[idx]
+                  : items[0].label;
+              }
+            }
+          }
         },
         scales: {
           x: { beginAtZero: true },
@@ -50,7 +61,7 @@ watch(() => props.chartData, (newData) => {
 .ff-chart-card {
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   padding: 1.5rem 2rem;
   margin-bottom: 2rem;
   min-height: 260px;
@@ -58,6 +69,7 @@ watch(() => props.chartData, (newData) => {
   align-items: center;
   justify-content: center;
 }
+
 canvas {
   max-width: 100%;
   max-height: 220px;

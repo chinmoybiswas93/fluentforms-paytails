@@ -44,28 +44,69 @@ const fetchForms = async () => {
       total_payments: 0,
       total_amount: '0.00'
     };
-    // Prepare line chart data (cumulative payments by month)
+
+    // Prepare 12 months: previous 11 months + current month
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    const now = new Date();
+    const months = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({
+        key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+        label: `${monthNames[d.getMonth()]} ${d.getFullYear()}`
+      });
+    }
     const monthly = response.data.monthly_payments || [];
+    const monthlyMap = {};
+    monthly.forEach(m => {
+      monthlyMap[m.month] = m;
+    });
+    let cumulative = 0;
+    const chartData = months.map(m => {
+      const entry = monthlyMap[m.key];
+      if (entry) {
+        cumulative = parseFloat(entry.cumulative_total);
+      }
+      return {
+        label: m.label,
+        value: entry ? parseFloat(entry.cumulative_total) : cumulative
+      };
+    });
+
     lineChartData.value = {
-      labels: monthly.map(m => m.month),
+      labels: chartData.map(m => m.label),
       datasets: [{
         label: 'Cumulative Payments',
-        data: monthly.map(m => parseFloat(m.cumulative_total)),
+        data: chartData.map(m => m.value),
         borderColor: '#1a7efb',
         backgroundColor: 'rgba(26,126,251,0.1)',
         fill: true,
         tension: 0.3
       }]
     };
+
     // Prepare bar chart data (top 5 forms by total paid)
     const topForms = response.data.top_forms || [];
+    const fullLabels = topForms.map(f => f.title || '');
     barChartData.value = {
-      labels: topForms.map(f => f.title),
+      labels: topForms.map(f => {
+        const title = f.title || '';
+        if (title.length > 12) {
+          const start = title.slice(0, 5);
+          const end = title.slice(-4);
+          return `${start}...${end}`;
+        }
+        return title;
+      }),
       datasets: [{
         label: 'Total Paid',
         data: topForms.map(f => parseFloat(f.total_paid)),
         backgroundColor: '#1a7efb'
-      }]
+      }],
+      fullLabels // <-- add this for tooltip use
     };
   } catch (e) {
     // handle error
