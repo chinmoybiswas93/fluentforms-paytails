@@ -1,36 +1,5 @@
 <template>
   <div>
-    <!-- Summary Cards - Outside table wrapper -->
-    <div v-if="loading" class="ff-summary-cards">
-      <div class="summary-card skeleton-card">
-        <div class="summary-title">Total Forms</div>
-        <div class="summary-value"><span class="pulse-loader loader-1"></span></div>
-      </div>
-      <div class="summary-card skeleton-card">
-        <div class="summary-title">Total Payments</div>
-        <div class="summary-value"><span class="bounce-loader loader-2"></span></div>
-      </div>
-      <div class="summary-card skeleton-card">
-        <div class="summary-title">Total Amount</div>
-        <div class="summary-value"><span class="fade-loader loader-3"></span></div>
-      </div>
-    </div>
-    <div class="ff-summary-cards" v-else>
-      <div class="summary-card">
-        <div class="summary-title">Total Forms</div>
-        <div class="summary-value">{{ totals.total_forms }}</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-title">Total Payments</div>
-        <div class="summary-value">{{ totals.total_payments }}</div>
-      </div>
-      <div class="summary-card">
-        <div class="summary-title">Total Amount</div>
-        <div class="summary-value">${{ totals.total_amount }}</div>
-      </div>
-    </div>
-
-    <!-- Table wrapper -->
     <div class="ff-table-wrapper">
       <div class="ff-table-header">
         <button @click="refreshForms" class="refresh-button" :disabled="loading">
@@ -140,11 +109,6 @@ const error = ref(null);
 const forms = ref([]);
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
-const totals = ref({
-  total_forms: 0,
-  total_payments: 0,
-  total_amount: '0.00'
-});
 
 const columns = ref([
   { key: 'id', label: 'ID', width: '8%' },
@@ -217,11 +181,6 @@ const fetchForms = async () => {
     });
 
     forms.value = response.data.forms || [];
-    totals.value = response.data.totals || {
-      total_forms: 0,
-      total_payments: 0,
-      total_amount: '0.00'
-    };
 
     // Reset to first page when refreshing
     currentPage.value = 1;
@@ -488,128 +447,4 @@ onMounted(() => fetchForms());
 
   /* Rest of existing responsive styles */
 }
-
-.ff-summary-cards {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.summary-card {
-  flex: 1;
-  background: #ffffff;
-  border-radius: 4px;
-  padding: 20px;
-  box-shadow: 0 2px 3px 0 hsla(0, 0%, 51%, .1);
-  /* cursor: pointer; */
-}
-
-/* .summary-card:hover {
-  padding: 20px;
-  box-shadow: 0 1px 3px rgb(255 0 195);
-  transition: all 0.5s ease;
-} */
-
-.summary-title {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 10px;
-}
-
-.summary-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-}
-
-/* Updated summary card skeleton loading styles */
-.skeleton-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.skeleton-card .summary-title {
-  opacity: 0.7;
-}
-
-/* Loader animations for summary cards */
-.pulse-loader,
-.bounce-loader,
-.fade-loader {
-  display: inline-block;
-  height: 24px;
-  width: 80px;
-  background: #f0f0f0;
-  border-radius: 4px;
-  position: relative;
-}
-
-/* Pulse loader animation */
-.loader-1 {
-  animation: pulse 1.2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 0.6;
-  }
-
-  50% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0.6;
-  }
-}
-
-/* Bounce loader animation */
-.loader-2::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: #1a7efb;
-  animation: bounce 1.5s ease-in-out infinite;
-}
-
-@keyframes bounce {
-  0% {
-    left: 0;
-    width: 4px;
-  }
-
-  50% {
-    left: calc(100% - 4px);
-    width: 4px;
-  }
-
-  100% {
-    left: 0;
-    width: 4px;
-  }
-}
-
-/* Fade loader animation */
-.loader-3 {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s infinite;
-}
-
-/* Remove the yellow loading box styles */
-.spinner-paytails {
-  background: transparent;
-  border: none;
-}
-
-/* Remove the paragraph styling that's no longer needed */
-.spinner-paytails p {
-  display: none;
-}
-
-/* Retain the existing skeleton animation */
-/* ...existing skeleton styles... */
 </style>
