@@ -1,9 +1,19 @@
 <template>
   <div>
     <!-- Summary Cards - Outside table wrapper -->
-    <div v-if="loading" class="spinner-paytails" style="margin-bottom: 2rem; padding: 0.5rem 1rem">
-      <span class="spinner is-active"></span>
-      <p> Loading stats, please wait... </p>
+    <div v-if="loading" class="ff-summary-cards">
+      <div class="summary-card skeleton-card">
+        <div class="summary-title">Total Forms</div>
+        <div class="summary-value"><span class="pulse-loader loader-1"></span></div>
+      </div>
+      <div class="summary-card skeleton-card">
+        <div class="summary-title">Total Payments</div>
+        <div class="summary-value"><span class="bounce-loader loader-2"></span></div>
+      </div>
+      <div class="summary-card skeleton-card">
+        <div class="summary-title">Total Amount</div>
+        <div class="summary-value"><span class="fade-loader loader-3"></span></div>
+      </div>
     </div>
     <div class="ff-summary-cards" v-else>
       <div class="summary-card">
@@ -23,9 +33,9 @@
     <!-- Table wrapper -->
     <div class="ff-table-wrapper">
       <div class="ff-table-header">
-        <button @click="refreshForms" class="refresh-button">
+        <button @click="refreshForms" class="refresh-button" :disabled="loading">
           <span v-if="!loading">Refresh</span>
-          <span v-else class="loading-spinner"></span>
+          <span v-else>Refreshing...</span>
         </button>
       </div>
 
@@ -34,6 +44,7 @@
           <h2> Payment Receiver Form Analytics </h2>
           <!-- Pagination Controls Top -->
           <div class="pagination-controls" v-if="!loading && forms.length > 0">
+            Items 
             <select v-model="itemsPerPage" @change="goToPage(1)" class="items-per-page">
               <option value="5">5 per page</option>
               <option value="10">10 per page</option>
@@ -46,36 +57,42 @@
         <table>
           <thead>
             <tr>
-              <th v-for="column in columns" :key="column.key">{{ column.label }}</th>
-            </tr>
-            <tr v-if="loading" class="spinner-paytails">
-              <td :colspan="columns.length" class="loading-state">
-                <span class="spinner is-active"></span>
-                <p>Loading forms data, please wait...</p>
-              </td>
+              <th v-for="column in columns" :key="column.key" :style="{ width: column.width }">
+                {{ column.label }}
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="form in paginatedForms" :key="form.id">
-              <td data-label="ID">{{ form.id }}</td>
-              <td data-label="Title">
-                <a :href="form.edit_url" class="form-title">{{ form.title }}</a>
-              </td>
-              <td data-label="Status">
-                <span class="status-badge" :class="form.status.toLowerCase()">
-                  {{ form.status }}
-                </span>
-              </td>
-              <td data-label="Creator">{{ form.creator }}</td>
-              <td data-label="Total Paid">${{ form.total_paid }}</td>
-              <td data-label="Actions">
-                <a :href="form.edit_url" class="table-button">Edit</a>
-                <a :href="form.entries_url" class="table-button secondary">Entries</a>
-              </td>
-            </tr>
-            <tr v-if="!forms.length && !loading">
-              <td :colspan="columns.length" class="no-data">No payment forms found</td>
-            </tr>
+            <template v-if="loading">
+              <tr v-for="i in 5" :key="`skeleton-${i}`" class="skeleton-row">
+                <td v-for="column in columns" :key="`skeleton-${i}-${column.key}`" class="skeleton-cell"
+                  :style="{ width: column.width }">
+                  <div class="skeleton-placeholder"></div>
+                </td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr v-for="form in paginatedForms" :key="form.id">
+                <td data-label="ID" :style="{ width: columns[0].width }">{{ form.id }}</td>
+                <td data-label="Title" :style="{ width: columns[1].width }">
+                  <a :href="form.edit_url" class="form-title">{{ form.title }}</a>
+                </td>
+                <td data-label="Status" :style="{ width: columns[2].width }">
+                  <span class="status-badge" :class="form.status.toLowerCase()">
+                    {{ form.status }}
+                  </span>
+                </td>
+                <td data-label="Creator" :style="{ width: columns[3].width }">{{ form.creator }}</td>
+                <td data-label="Total Paid" :style="{ width: columns[4].width }">${{ form.total_paid }}</td>
+                <td data-label="Actions" :style="{ width: columns[5].width }">
+                  <a :href="form.edit_url" class="table-button">Edit</a>
+                  <a :href="form.entries_url" class="table-button secondary">Entries</a>
+                </td>
+              </tr>
+              <tr v-if="!forms.length && !loading">
+                <td :colspan="columns.length" class="no-data">No payment forms found</td>
+              </tr>
+            </template>
           </tbody>
         </table>
 
@@ -130,12 +147,12 @@ const totals = ref({
 });
 
 const columns = ref([
-  { key: 'id', label: 'ID' },
-  { key: 'title', label: 'Title' },
-  { key: 'status', label: 'Status' },
-  { key: 'creator', label: 'Creator' },
-  { key: 'total_paid', label: 'Total Payment Received (USD)' },
-  { key: 'actions', label: 'Actions' }
+  { key: 'id', label: 'ID', width: '8%' },
+  { key: 'title', label: 'Title', width: '33%' },
+  { key: 'status', label: 'Status', width: '14%' },
+  { key: 'creator', label: 'Creator', width: '15%' },
+  { key: 'total_paid', label: 'Total Received', width: '15%' },
+  { key: 'actions', label: 'Actions', width: '15%' }
 ]);
 
 // Computed properties for pagination
@@ -260,24 +277,37 @@ onMounted(() => fetchForms());
   background: #1a7efb;
 }
 
-.loading-spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #fff;
-  border-top-color: transparent;
-  border-radius: 50%;
-  display: inline-block;
-  animation: spin 0.6s linear infinite;
+/* Update skeleton placeholder to use a static color instead of animation */
+.skeleton-placeholder {
+  height: 20px;
+  background: #f0f0f0;
+  border-radius: 4px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+.skeleton-row {
+  opacity: 0.7;
+}
+
+.skeleton-cell {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+/* Keep the shimmer animation only for the loader-3 in summary cards */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
   }
 }
 
 .responsive-table table {
   width: 100%;
+  table-layout: fixed;
+  /* This is important for fixed width columns */
   border-collapse: collapse;
   font-size: 14px;
 
@@ -292,7 +322,8 @@ onMounted(() => fetchForms());
   padding: 12px 16px;
   border-bottom: 1px solid #eaeaea;
   text-align: left;
-  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .responsive-table thead {
@@ -303,6 +334,11 @@ onMounted(() => fetchForms());
   color: #1a7efb;
   text-decoration: none;
   font-weight: 500;
+  max-width: 100%;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .form-title:hover {
@@ -390,7 +426,6 @@ onMounted(() => fetchForms());
   align-items: center;
   margin-top: 20px;
   padding: 15px 0;
-  border-top: 1px solid #eaeaea;
 }
 
 .pagination-info {
@@ -441,62 +476,17 @@ onMounted(() => fetchForms());
 /* Responsive Design */
 @media (max-width: 768px) {
 
-  .responsive-table table,
-  .responsive-table thead,
-  .responsive-table tbody,
-  .responsive-table th,
-  .responsive-table td,
-  .responsive-table tr {
-    display: block;
-  }
-
-  .responsive-table thead {
-    display: none;
-  }
-
-  .responsive-table tr {
-    margin-bottom: 15px;
-    background: #fff;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
+  .responsive-table table {
+    table-layout: auto;
+    /* Reset table layout for mobile */
   }
 
   .responsive-table td {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid #f0f0f0;
+    width: 100% !important;
+    /* Override inline styles for mobile */
   }
 
-  .responsive-table td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #666;
-    flex: 0 0 120px;
-    margin-right: 10px;
-  }
-
-  .pagination-wrapper {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
-
-  .pagination {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .ff-table-header {
-    flex-direction: column;
-    gap: 10px;
-    align-items: stretch;
-  }
-
-  .pagination-controls {
-    justify-content: center;
-  }
+  /* Rest of existing responsive styles */
 }
 
 .ff-summary-cards {
@@ -532,15 +522,94 @@ onMounted(() => fetchForms());
   color: #333;
 }
 
-.spinner-paytails {
-  background: #f7ff1217;
-  border: 2px solid #cbc41f40;
+/* Updated summary card skeleton loading styles */
+.skeleton-card {
+  position: relative;
+  overflow: hidden;
 }
 
-.spinner-paytails p {
-  color: #cbc51f;
-  font-size: 18px;
-  padding: 0;
-  margin: 0.4rem 0;
+.skeleton-card .summary-title {
+  opacity: 0.7;
 }
+
+/* Loader animations for summary cards */
+.pulse-loader,
+.bounce-loader,
+.fade-loader {
+  display: inline-block;
+  height: 24px;
+  width: 80px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  position: relative;
+}
+
+/* Pulse loader animation */
+.loader-1 {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
+}
+
+/* Bounce loader animation */
+.loader-2::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #1a7efb;
+  animation: bounce 1.5s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0% {
+    left: 0;
+    width: 4px;
+  }
+
+  50% {
+    left: calc(100% - 4px);
+    width: 4px;
+  }
+
+  100% {
+    left: 0;
+    width: 4px;
+  }
+}
+
+/* Fade loader animation */
+.loader-3 {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+}
+
+/* Remove the yellow loading box styles */
+.spinner-paytails {
+  background: transparent;
+  border: none;
+}
+
+/* Remove the paragraph styling that's no longer needed */
+.spinner-paytails p {
+  display: none;
+}
+
+/* Retain the existing skeleton animation */
+/* ...existing skeleton styles... */
 </style>
