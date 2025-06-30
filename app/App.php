@@ -18,7 +18,7 @@ class App {
     }
     private function defineConstant(): void
     {
-        define( 'FLUENTFORMS_PAYTAILS', 'fluentforms-paytails' );
+        define( 'FLUENTFORMS_PAYTAILS', 'ppa-for-fluentforms' );
         define( 'FLUENTFORMS_PAYTAILS_PATH', untrailingslashit( plugin_dir_path( __DIR__ ) ) );
         define( 'FLUENTFORMS_PAYTAILS_URL', untrailingslashit( plugin_dir_url( __DIR__ ) ) );
         define( 'FLUENTFORMS_PAYTAILS_BUILD_PATH', FLUENTFORMS_PAYTAILS_PATH . '/public/assets' );
