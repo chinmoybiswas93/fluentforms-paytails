@@ -40,3 +40,6 @@ Follow the steps below to set up and start using this WordPress plugin boilerpla
     - This will run the vue without reloading the page.
 
 # `fluentforms-paytails`
+
+📌 **Contribution**
+[Github Link](https://github.com/Suite-Press/fluentforms-paytails)

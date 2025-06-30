@@ -33,8 +33,8 @@ class AdminMenuHandlers {
         $dashBoardCapability = apply_filters('fluentform_dashboard_capability', 'manage_options');
         add_submenu_page(
             'fluent_forms',
-            __('Paytails', 'fluentforms-paytails'),
-            __('Paytails', 'fluentforms-paytails'),
+            __('Paytails', 'ppa-for-fluentforms'),
+            __('Paytails', 'ppa-for-fluentforms'),
             $dashBoardCapability,
             'ffpay-dashboard',
             [$this, 'renderDashboard']
