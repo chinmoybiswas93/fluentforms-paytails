@@ -1,11 +1,11 @@
-=== PPA for FF - Paytails Payment Analytics for Fluent Forms ===
+=== PPA for Fluent Forms - Paytails Payment Analytics for Fluent Forms ===
 Contributors: suitepress
-Donate link: https://suitepress.org/donate-fluent-forms-paytails
+Donate link: https://suitepress.org/donate-fluentforms-paytails
 Tags: fluent forms, payment analytics, form payments, wordpress payments, payment overview
 Requires at least: 5.2
 Tested up to: 6.8
 Requires PHP: 7.2
-Stable tag: 10.0
+Stable tag: 10.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -69,10 +69,18 @@ Yes, Fluent Forms Paytails is compatible with both single-site and multisite Wor
 
 1. Payment overview dashboard
 2. Form-specific payment analytics
+3. Paytails Dashboard
 
 == Changelog ==
 
-= 1.0.0 – June 14, 2025 =
+= 10.5 – July 8, 2025 =
+* Table search introduce
+* Table pagination introduce
+* Header introduce
+* UI updated
+* Bug Fix: Payment forms count issue fixed
+
+= 10.0 – June 14, 2025 =
 * Initial public release
 * Payment overview dashboard
 * Form-specific analytics
@@ -80,7 +88,7 @@ Yes, Fluent Forms Paytails is compatible with both single-site and multisite Wor
 
 == Upgrade Notice ==
 
-= 1.0.0 =
+= 10.0 =
 First release. Track and analyze Fluent Forms payments with ease.
 
 == License ==

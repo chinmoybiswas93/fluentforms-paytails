@@ -6,6 +6,27 @@ class AdminMenuHandlers {
         add_action('admin_menu', [$this, 'fluentforms_paytails_admin_menu']);
         add_action('admin_enqueue_scripts', [$this, 'fluentforms_paytails_conditionally_enqueue_assets']);
         add_action('admin_notices', [$this, 'fluentforms_paytails_ff_not_install_activate']);
+        add_action('admin_head', [$this,'hideNoticeDashboard']);
+        add_action('admin_footer', [$this,'ffpay_dashboard_footer']);
+    }
+    public function hideNoticeDashboard(){
+        if (isset($_GET['page']) && $_GET['page'] === 'ffpay-dashboard') {
+            remove_all_actions('admin_notices');
+            remove_all_actions('all_admin_notices');
+        }
+    }
+    public function ffpay_dashboard_footer(){
+        if (!isset($_GET['page']) || $_GET['page'] !== 'ffpay-dashboard') {
+            return;
+        }
+        $version = FLUENTFORMS_PAYTAILS_VERSION;
+        echo '<div class="ffpay-dashboard-footer" style="position: absolute; bottom: 20px; left: 20px; right: 20px; padding: 15px; border-top: 1px solid #eee; color: #666; font-size: 13px;">';
+        echo '<p>';
+        echo sprintf(__('Powered by %s | Version %s', 'your-text-domain'),
+            '<a href="https://suitepress.org/fluentforms-paytails/" target="_blank"> SuitePress </a>',
+            $version);
+        echo '</p>';
+        echo '</div>';
     }
     public function fluentforms_paytails_ff_not_install_activate(): void
     {
