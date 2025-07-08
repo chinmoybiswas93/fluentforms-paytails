@@ -23,6 +23,6 @@ class App {
         define( 'FLUENTFORMS_PAYTAILS_URL', untrailingslashit( plugin_dir_url( __DIR__ ) ) );
         define( 'FLUENTFORMS_PAYTAILS_BUILD_PATH', FLUENTFORMS_PAYTAILS_PATH . '/public/assets' );
         define( 'FLUENTFORMS_PAYTAILS_BUILD_URL', FLUENTFORMS_PAYTAILS_URL . '/public/assets' );
-        define( 'FLUENTFORMS_PAYTAILS_VERSION', '1.1.1' );
+        define( 'FLUENTFORMS_PAYTAILS_VERSION', '10.5' );
     }
 }

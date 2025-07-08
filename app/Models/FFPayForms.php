@@ -15,16 +15,17 @@ class FFPayForms{
                 ]
             ];
         }
+
         try {
             $forms = wpFluent()->table('fluentform_forms')
                 ->where('has_payment', 1)
                 ->orderBy('created_at', 'DESC')
                 ->get();
 
-            // Get totals for all payment forms
-            $totals = wpFluent()->table('fluentform_submissions')
+            $total_forms = count($forms);
+
+            $payment_totals = wpFluent()->table('fluentform_submissions')
                 ->select([
-                    wpFluent()->raw('COUNT(DISTINCT form_id) as total_forms'),
                     wpFluent()->raw('COUNT(*) as total_payments'),
                     wpFluent()->raw('SUM(payment_total) as total_amount')
                 ])
@@ -57,9 +58,9 @@ class FFPayForms{
             return [
                 'forms' => $processedForms,
                 'totals' => [
-                    'total_forms' => (int)$totals->total_forms,
-                    'total_payments' => (int)$totals->total_payments,
-                    'total_amount' => $totals->total_amount ? number_format($totals->total_amount / 100, 2) : '0.00'
+                    'total_forms' => $total_forms,
+                    'total_payments' => (int)$payment_totals->total_payments,
+                    'total_amount' => $payment_totals->total_amount ? number_format($payment_totals->total_amount / 100, 2) : '0.00'
                 ]
             ];
 

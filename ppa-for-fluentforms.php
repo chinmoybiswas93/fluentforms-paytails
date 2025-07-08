@@ -8,8 +8,8 @@ if ( ! defined('ABSPATH')) {
  *
  * Plugin Name:         PPA for Fluent Forms
  * Plugin URI:          https://wordpress.org/plugins/fluentforms-paytails
- * Description:         PPA for FF - Paytails Payment Analytics for Fluent Forms
- * Version:             10.0
+ * Description:         PPA for Fluent Forms - Advance Payment Analytics for Payments Forms
+ * Version:             10.5
  * Requires at least:   5.2
  * Requires PHP:        7.2
  * Contributor:         suitepress
